@@ -20,4 +20,4 @@ Then edit the configuration file `config.ini`.
 Finally the script can be executed with:
 `python gitlab-gantt-maker.py`
 
-With no options, `config.ini` will be used as the configuration file and the output will be `gantt.html`. Execute the script with `python gitlab-gantt-maker.py` for help on available parameters.
+With no options, `config.ini` will be used as the configuration file and the output will be `gantt.html`. Execute the script with `python gitlab-gantt-maker.py -h` for help on available parameters.
