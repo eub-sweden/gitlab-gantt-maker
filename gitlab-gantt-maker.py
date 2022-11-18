@@ -23,6 +23,12 @@ def datestr_add_a_day(date):
     return d.strftime("%Y-%m-%d")
 
 
+def datestr_subtract_a_day(date):
+    d = datetime.fromisoformat(strip_tz(date))
+    d -= timedelta(days=1)
+    return d.strftime("%Y-%m-%d")
+
+
 # If a milestone does not have a due date,
 # one year from now is assumed
 end_of_time = datetime.now()
@@ -97,8 +103,12 @@ def extract_milestone(ms):
 
 
 def extract_issue(i, start_date, due_date):
-    start = start_date if i.created_at < start_date else i.created_at
-    due = i.due_date if i.due_date else datestr_add_a_day(start)
+    if i.due_date:
+        due = i.due_date
+        start = datestr_subtract_a_day(due)
+    else:
+        start = start_date if i.created_at < start_date else i.created_at
+        due = datestr_add_a_day(start)
     return i.title, strip_tz(start), strip_tz(due), i.web_url
 
 
