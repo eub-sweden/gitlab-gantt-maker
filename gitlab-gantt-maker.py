@@ -162,7 +162,9 @@ def main():
         p = gl.projects.get(proj.id)
         for pm in p.milestones.list(state="active"):
             title, start_date, due_date, url = extract_milestone(pm)
-            gc.add_task(title, start_date, due_date, url, "Project Milestone")
+            gc.add_task(
+                p.name + "/" + title, start_date, due_date, url, "Project Milestone"
+            )
             for i in pm.issues():
                 if not i.state == "closed":
                     ititle, istart_date, idue_date, url = extract_issue(
