@@ -162,7 +162,7 @@ def main():
     projlist = group.projects.list()
 
     # Group milestones
-    for groupms in group.milestones.list(state="active"):
+    for groupms in sorted(group.milestones.list(state="active"), key=lambda d: d.due_date):
         gm = group.milestones.get(groupms.id)
         title, start_date, due_date, url = extract_milestone(gm)
         gc.add_task(title, start_date, due_date, url, "Group Milestone")
@@ -170,12 +170,12 @@ def main():
     # Project milestones
     for proj in projlist:
         p = gl.projects.get(proj.id)
-        for pm in p.milestones.list(state="active"):
+        for pm in sorted(p.milestones.list(state="active"), key=lambda d: d.due_date):
             title, start_date, due_date, url = extract_milestone(pm)
             gc.add_task(
                 p.name + "/" + title, start_date, due_date, url, "Project Milestone"
             )
-            for i in pm.issues():
+            for i in sorted(pm.issues(), key=lambda d: "" if not d.due_date else d.due_date):
                 if not i.state == "closed":
                     ititle, istart_date, idue_date, url = extract_issue(
                         i, start_date, due_date
