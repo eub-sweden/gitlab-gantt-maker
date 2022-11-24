@@ -41,17 +41,21 @@ class GanttMaker:
         self.filename = filename
         self.tasks = []
         self.idx = 0
-        self.colormap = {
-            "Group Milestone": "green",
-            "Project Milestone": "blue",
-            "Issue": "goldenrod",
-        }
+        self.colors = px.colors.qualitative.Antique
+        self.color_idx = 0
 
     def __repr__(self):
         return str(pd.DataFrame(self.tasks))
 
-    def add_task(self, name, start, finish, url, type="Issue"):
-        hyperlink = f"""<a href="{url}", target="_black">o</a>"""
+    def current_color(self):
+        return self.colors[self.color_idx]
+
+    def next_color(self):
+        self.color_idx += 1
+        self.color_idx = self.color_idx if self.color_idx < len(self.colors) else 0
+
+    def add_task(self, name, start, finish, url, color="green"):
+        hyperlink = f"""<a href="{url}", target="_blank">{name}</a>"""
         self.tasks.append(
             dict(
                 Index=self.idx,
@@ -59,7 +63,7 @@ class GanttMaker:
                 Start=start,
                 Finish=finish,
                 Url=hyperlink,
-                Resource=type,
+                Color=color,
             )
         )
         self.idx += 1
@@ -87,9 +91,7 @@ class GanttMaker:
             x_end="Finish",
             y="Task",
         )
-        self.fig.update_traces(
-            marker_color=[self.colormap[r] for r in self.df.Resource]
-        )
+        self.fig.update_traces(marker_color=self.df.Color)
         self.fig.update_yaxes(autorange="reversed")
         self._annotate()
         with open(self.filename, "w") as f:
@@ -162,10 +164,12 @@ def main():
     projlist = sorted(group.projects.list(), key=lambda d: d.created_at)
 
     # Group milestones
-    for groupms in sorted(group.milestones.list(state="active"), key=lambda d: d.due_date):
+    for groupms in sorted(
+        group.milestones.list(state="active"), key=lambda d: d.due_date
+    ):
         gm = group.milestones.get(groupms.id)
         title, start_date, due_date, url = extract_milestone(gm)
-        gc.add_task(title, start_date, due_date, url, "Group Milestone")
+        gc.add_task(title, start_date, due_date, url)
 
     # Project milestones
     for proj in projlist:
@@ -173,14 +177,17 @@ def main():
         for pm in sorted(p.milestones.list(state="active"), key=lambda d: d.due_date):
             title, start_date, due_date, url = extract_milestone(pm)
             gc.add_task(
-                p.name + "/" + title, start_date, due_date, url, "Project Milestone"
+                p.name + "/" + title, start_date, due_date, url, gc.current_color()
             )
-            for i in sorted(pm.issues(), key=lambda d: "" if not d.due_date else d.due_date):
+            for i in sorted(
+                pm.issues(), key=lambda d: "" if not d.due_date else d.due_date
+            ):
                 if not i.state == "closed":
                     ititle, istart_date, idue_date, url = extract_issue(
                         i, start_date, due_date
                     )
-                    gc.add_task(ititle, istart_date, idue_date, url)
+                    gc.add_task(ititle, istart_date, idue_date, url, "gray")
+        gc.next_color()
 
     if args.verbose:
         print(gc)
