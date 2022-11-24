@@ -159,7 +159,7 @@ def main():
     gc = GanttMaker(args.output)
 
     group = g[0]
-    projlist = group.projects.list()
+    projlist = sorted(group.projects.list(), key=lambda d: d.created_at)
 
     # Group milestones
     for groupms in sorted(group.milestones.list(state="active"), key=lambda d: d.due_date):
