@@ -75,10 +75,10 @@ class GanttMaker:
             x_dates = periods[center_pos]
             self.fig.add_annotation(
                 {
-                    "x": x_dates,  # row["Finish"],
+                    "x": x_dates,
                     "y": row["Task"],
                     "text": row["Url"],
-                    "align": "center",
+                    "align": "right",
                     "showarrow": False,
                 }
             )
@@ -89,11 +89,11 @@ class GanttMaker:
             self.df,
             x_start="Start",
             x_end="Finish",
-            y="Task",
+            # y="Task",
+            text="Url",
         )
-        self.fig.update_traces(marker_color=self.df.Color)
+        self.fig.update_traces(marker_color=self.df.Color, textposition="outside")
         self.fig.update_yaxes(autorange="reversed")
-        self._annotate()
         with open(self.filename, "w") as f:
             f.write(pio.to_html(self.fig))
 
